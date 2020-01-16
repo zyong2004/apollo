@@ -12,10 +12,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Only use in apollo-portal
- * load all meta server address from
- *  - System Property           [key ends with "_meta" (case insensitive)]
- *  - OS environment variable   [key ends with "_meta" (case insensitive)]
- *  - user's configuration file [key ends with ".meta" (case insensitive)]
+ * load all meta server address from<br/>
+ *  - System Property           [key ends with "_meta" (case insensitive)]<br/>
+ *  - OS environment variable   [key ends with "_meta" (case insensitive)]<br/>
+ *  - user's configuration file [key ends with ".meta" (case insensitive)]<br/>
  * when apollo-portal start up.
  * @see com.ctrip.framework.apollo.core.internals.LegacyMetaServerProvider
  * @author wxq
