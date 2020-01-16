@@ -1,5 +1,6 @@
 package com.ctrip.framework.apollo.util;
 
+import com.google.common.util.concurrent.RateLimiter;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
@@ -34,8 +35,10 @@ public class ConfigUtil {
   private TimeUnit configCacheExpireTimeUnit = TimeUnit.MINUTES;//1 minute
   private long longPollingInitialDelayInMills = 2000;//2 seconds
   private boolean autoUpdateInjectedSpringProperties = true;
+  private final RateLimiter warnLogRateLimiter;
 
   public ConfigUtil() {
+    warnLogRateLimiter = RateLimiter.create(0.017); // 1 warning log output per minute
     initRefreshInterval();
     initConnectTimeout();
     initReadTimeout();
@@ -55,10 +58,21 @@ public class ConfigUtil {
     String appId = Foundation.app().getAppId();
     if (Strings.isNullOrEmpty(appId)) {
       appId = ConfigConsts.NO_APPID_PLACEHOLDER;
-      logger.warn("app.id is not set, please make sure it is set in classpath:/META-INF/app.properties, now apollo " +
-          "will only load public namespace configurations!");
+      if (warnLogRateLimiter.tryAcquire()) {
+        logger.warn(
+            "app.id is not set, please make sure it is set in classpath:/META-INF/app.properties, now apollo will only load public namespace configurations!");
+      }
     }
     return appId;
+  }
+
+  /**
+   * Get the access key secret for the current application.
+   *
+   * @return the current access key secret, null if there is no such secret.
+   */
+  public String getAccessKeySecret() {
+    return Foundation.app().getAccessKeySecret();
   }
 
   /**
@@ -218,6 +232,10 @@ public class ConfigUtil {
       // 3. Get from server.properties
       cacheRoot = Foundation.server().getProperty("apollo.cacheDir", null);
     }
+    if (Strings.isNullOrEmpty(cacheRoot)) {
+      // 4. Get from app.properties
+      cacheRoot = Foundation.app().getProperty("apollo.cacheDir", null);
+    }
 
     return cacheRoot;
   }
@@ -243,7 +261,7 @@ public class ConfigUtil {
     String customizedConfigCacheSize = System.getProperty("apollo.configCacheSize");
     if (!Strings.isNullOrEmpty(customizedConfigCacheSize)) {
       try {
-        maxConfigCacheSize = Long.valueOf(customizedConfigCacheSize);
+        maxConfigCacheSize = Long.parseLong(customizedConfigCacheSize);
       } catch (Throwable ex) {
         logger.error("Config for apollo.configCacheSize is invalid: {}", customizedConfigCacheSize);
       }
@@ -266,7 +284,7 @@ public class ConfigUtil {
     String customizedLongPollingInitialDelay = System.getProperty("apollo.longPollingInitialDelayInMills");
     if (!Strings.isNullOrEmpty(customizedLongPollingInitialDelay)) {
       try {
-        longPollingInitialDelayInMills = Long.valueOf(customizedLongPollingInitialDelay);
+        longPollingInitialDelayInMills = Long.parseLong(customizedLongPollingInitialDelay);
       } catch (Throwable ex) {
         logger.error("Config for apollo.longPollingInitialDelayInMills is invalid: {}", customizedLongPollingInitialDelay);
       }

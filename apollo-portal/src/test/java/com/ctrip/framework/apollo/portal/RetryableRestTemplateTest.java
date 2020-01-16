@@ -2,7 +2,7 @@ package com.ctrip.framework.apollo.portal;
 
 import com.ctrip.framework.apollo.common.exception.ServiceException;
 import com.ctrip.framework.apollo.core.dto.ServiceDTO;
-import com.ctrip.framework.apollo.core.enums.Env;
+import com.ctrip.framework.apollo.portal.environment.Env;
 import com.ctrip.framework.apollo.portal.component.AdminServiceAddressLocator;
 import com.ctrip.framework.apollo.portal.component.RetryableRestTemplate;
 
@@ -23,7 +23,7 @@ import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
